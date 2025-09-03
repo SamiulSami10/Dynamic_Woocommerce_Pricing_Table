@@ -12,3 +12,10 @@
 .ptwc-table th {
   background: #f9f9f9;
 }
+.ptwc-table td a {
+  color: #0073aa;
+  text-decoration: none;
+}
+.ptwc-table td a:hover {
+  text-decoration: underline;
+}

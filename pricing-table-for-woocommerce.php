@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Pricing Table for WooCommerce
  * Description: Display dynamic product pricing tables on WooCommerce category pages using a shortcode.
- * Version: 1.1.0
+ * Version: 1.4.0
  * Author: Your Name
  * Text Domain: pricing-table-for-woocommerce
  * Domain Path: /languages
@@ -28,10 +28,11 @@ function ptwc_pricing_table_shortcode($atts)
 {
     $atts = shortcode_atts(array(
         'category' => '',
-        'limit' => -1,
+        'limit' => 10, // Always 10 products
         'products' => '',
     ), $atts, 'pricing_table');
 
+    // If specific products are passed
     if (!empty($atts['products'])) {
         $product_ids = array_map('intval', explode(',', $atts['products']));
         $args = array(
@@ -41,6 +42,7 @@ function ptwc_pricing_table_shortcode($atts)
             'orderby' => 'post__in'
         );
     } else {
+        // Detect category if none is passed
         $category = $atts['category'];
         if (empty($category) && is_product_category()) {
             $category = get_queried_object()->slug;
@@ -48,14 +50,16 @@ function ptwc_pricing_table_shortcode($atts)
 
         $args = array(
             'post_type' => 'product',
-            'posts_per_page' => intval($atts['limit']),
+            'posts_per_page' => 10, // Always 10
             'tax_query' => array(
                 array(
                     'taxonomy' => 'product_cat',
                     'field' => 'slug',
                     'terms' => $category,
                 )
-            )
+            ),
+            'orderby' => 'date',
+            'order' => 'DESC', // Newest → oldest
         );
     }
 
@@ -65,6 +69,7 @@ function ptwc_pricing_table_shortcode($atts)
         return '<p>' . __('No products found.', 'pricing-table-for-woocommerce') . '</p>';
     }
 
+    // Start table
     $output = '<table class="ptwc-table">
         <thead>
             <tr>
@@ -80,7 +85,7 @@ function ptwc_pricing_table_shortcode($atts)
 
         $output .= '<tr>
             <td><a href="' . esc_url(get_permalink()) . '">' . esc_html(get_the_title()) . '</a></td>
-    <td>' . $product->get_price_html() . '</td>
+            <td>' . $product->get_price_html() . '</td>
         </tr>';
     }
 
