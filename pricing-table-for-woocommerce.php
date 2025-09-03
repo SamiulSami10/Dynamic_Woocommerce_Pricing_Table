@@ -79,8 +79,8 @@ function ptwc_pricing_table_shortcode($atts)
         $product = wc_get_product(get_the_ID());
 
         $output .= '<tr>
-            <td>' . esc_html(get_the_title()) . '</td>
-            <td>' . $product->get_price_html() . '</td>
+            <td><a href="' . esc_url(get_permalink()) . '">' . esc_html(get_the_title()) . '</a></td>
+    <td>' . $product->get_price_html() . '</td>
         </tr>';
     }
 
