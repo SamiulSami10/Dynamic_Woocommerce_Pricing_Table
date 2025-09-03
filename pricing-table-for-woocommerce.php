@@ -2,73 +2,85 @@
 /**
  * Plugin Name: Pricing Table for WooCommerce
  * Description: Display dynamic product pricing tables on WooCommerce category pages using a shortcode.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Your Name
+ * Text Domain: pricing-table-for-woocommerce
+ * Domain Path: /languages
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+if (!defined('ABSPATH'))
+    exit; // Exit if accessed directly
+
+// Enqueue CSS
+function ptwc_enqueue_assets()
+{
+    wp_enqueue_style(
+        'ptwc-styles',
+        plugin_dir_url(__FILE__) . 'assets/css/pricing-table.css',
+        array(),
+        '1.0.0'
+    );
+}
+add_action('wp_enqueue_scripts', 'ptwc_enqueue_assets');
 
 // Register Shortcode
-function ptwc_pricing_table_shortcode( $atts ) {
-    // Shortcode attributes
-    $atts = shortcode_atts( array(
+function ptwc_pricing_table_shortcode($atts)
+{
+    $atts = shortcode_atts(array(
         'category' => '',
-        'limit'    => -1,
+        'limit' => -1,
         'products' => '',
-    ), $atts, 'pricing_table' );
+    ), $atts, 'pricing_table');
 
-    // If specific products are passed
-    if ( ! empty( $atts['products'] ) ) {
-        $product_ids = array_map( 'intval', explode( ',', $atts['products'] ) );
+    if (!empty($atts['products'])) {
+        $product_ids = array_map('intval', explode(',', $atts['products']));
         $args = array(
-            'post_type'      => 'product',
-            'post__in'       => $product_ids,
+            'post_type' => 'product',
+            'post__in' => $product_ids,
             'posts_per_page' => -1,
-            'orderby'        => 'post__in'
+            'orderby' => 'post__in'
         );
     } else {
-        // Detect category if none is passed
         $category = $atts['category'];
-        if ( empty( $category ) && is_product_category() ) {
+        if (empty($category) && is_product_category()) {
             $category = get_queried_object()->slug;
         }
 
         $args = array(
-            'post_type'      => 'product',
-            'posts_per_page' => intval( $atts['limit'] ),
-            'tax_query'      => array(
+            'post_type' => 'product',
+            'posts_per_page' => intval($atts['limit']),
+            'tax_query' => array(
                 array(
                     'taxonomy' => 'product_cat',
-                    'field'    => 'slug',
-                    'terms'    => $category,
+                    'field' => 'slug',
+                    'terms' => $category,
                 )
             )
         );
     }
 
-    $query = new WP_Query( $args );
+    $query = new WP_Query($args);
 
-    if ( ! $query->have_posts() ) {
-        return '<p>No products found.</p>';
+    if (!$query->have_posts()) {
+        return '<p>' . __('No products found.', 'pricing-table-for-woocommerce') . '</p>';
     }
 
-    // Start table
-    $output = '<table class="ptwc-table" style="width:100%;border-collapse:collapse;margin:15px 0;">
+    $output = '<table class="ptwc-table">
         <thead>
             <tr>
-                <th style="border:1px solid #ccc;padding:8px;text-align:left;">Product</th>
-                <th style="border:1px solid #ccc;padding:8px;text-align:left;">Price</th>
+                <th>' . __('Product', 'pricing-table-for-woocommerce') . '</th>
+                <th>' . __('Price', 'pricing-table-for-woocommerce') . '</th>
             </tr>
         </thead>
         <tbody>';
 
-    while ( $query->have_posts() ) {
+    while ($query->have_posts()) {
         $query->the_post();
-        $product = wc_get_product( get_the_ID() );
+        $product = wc_get_product(get_the_ID());
 
         $output .= '<tr>
-            <td style="border:1px solid #ccc;padding:8px;">' . esc_html( get_the_title() ) . '</td>
-            <td style="border:1px solid #ccc;padding:8px;">' . $product->get_price_html() . '</td>
+            <td>' . esc_html(get_the_title()) . '</td>
+            <td>' . $product->get_price_html() . '</td>
         </tr>';
     }
 
@@ -78,4 +90,4 @@ function ptwc_pricing_table_shortcode( $atts ) {
 
     return $output;
 }
-add_shortcode( 'pricing_table', 'ptwc_pricing_table_shortcode' );
+add_shortcode('pricing_table', 'ptwc_pricing_table_shortcode');

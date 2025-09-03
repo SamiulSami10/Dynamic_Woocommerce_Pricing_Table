@@ -1,0 +1,14 @@
+.ptwc-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 15px 0;
+}
+.ptwc-table th,
+.ptwc-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+.ptwc-table th {
+  background: #f9f9f9;
+}
